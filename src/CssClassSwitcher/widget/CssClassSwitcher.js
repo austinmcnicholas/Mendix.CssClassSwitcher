@@ -23,13 +23,27 @@ define([
             ? Array.prototype.slice.call(document.querySelectorAll(this.elementSelector)) // NodeList to Array, cross-browser safe
             : [this.domNode.parentNode];
         },
+        
 
         update: function (obj, callback) {
           this._updateRendering();
+          
+          if(obj)
+          {
+            console.log("Subscribed to changes for object with guid: " + obj.getGuid());
+            this.subscribe({
+              guid: obj.getGuid(),
+              callback: function(guid) {
+                  console.log("Object with guid " + guid + " changed");
+                  this._updateRendering();
+              }
+            });
+          }
           callback();
         },
 
         _updateRendering: function () {
+          console.log("SWITCHER - Updating the rendering");
           if (this.classGetterMicroflow) {
             mx.data.action({
               params: {actionname: this.classGetterMicroflow, applyto: "none"},
@@ -56,10 +70,15 @@ define([
         },
 
         _replaceClasses: function (classesToAdd) {
+          console.log("SWITCHER - Replacing classes with " + classesToAdd);
           var _this = this;
           // split by space
           var _toRemove = this.classesToRemove.split(" ");
           var _toAdd = classesToAdd.split(" ").filter(function(n) { return n; });;
+          
+          // Swap around so on switch we can pull old classes out
+          this.classesToRemove = classesToAdd;
+
           // don't remove what should be added
           _toRemove = _toRemove.filter(function(n) { return _toAdd.indexOf(n) === -1; });
           this._elementsToApplyTo.forEach(function (_element) {
