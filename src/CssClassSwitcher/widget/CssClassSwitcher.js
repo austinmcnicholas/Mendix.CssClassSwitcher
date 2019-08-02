@@ -26,7 +26,7 @@ define([
         
 
         update: function (obj, callback) {
-          this._updateRendering();
+          this._updateRendering(obj);
           
           if(obj)
           {
@@ -35,18 +35,22 @@ define([
               guid: obj.getGuid(),
               callback: function(guid) {
                   console.log("Object with guid " + guid + " changed");
-                  this._updateRendering();
+                  this._updateRendering(obj);
               }
             });
           }
           callback();
         },
 
-        _updateRendering: function () {
+        _updateRendering: function (obj) {
           console.log("SWITCHER - Updating the rendering");
           if (this.classGetterMicroflow) {
+            var  objGuid;
+            if (obj){
+              objGuid = obj.getGuid();
+            }
             mx.data.action({
-              params: {actionname: this.classGetterMicroflow, applyto: "none"},
+              params: {actionname: this.classGetterMicroflow, applyto: "selection", guids: [objGuid]},
               callback: lang.hitch(this, function (returnedString) {
                 this._replaceClasses(returnedString);
               }),
